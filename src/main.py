@@ -2,6 +2,9 @@ import pygame
 import random
 import time
 
+from coordinates import Coordinates
+from graph_search import pathfind
+
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 BLUE = (0, 0, 255)
@@ -14,7 +17,16 @@ CHECKPOINT_COLOR = (224, 161, 79)
 FPS = 60
 WIDTH = 800
 
+
 class Gui():
+    grid_size: int
+    box_width: float
+    coords: Coordinates
+    placing_walls: bool
+    removing_walls: bool
+    animation_speed: int
+
+
     def __init__(self, coords):
         # gui variables
         self.grid_size = 15
@@ -311,161 +323,6 @@ class Gui():
         text_rect.center = (center)
         self.win.blit(text_surf, text_rect)
 
-
-class Coordinates():
-    def __init__(self):
-        self.remove_all()
-
-
-    def remove_all(self):
-        self.start = None
-        self.end = None
-        self.walls = []
-        self.maze = []
-        self.open_list = []
-        self.closed_list = []
-        self.final_path = []
-        self.check_points = []
-
-
-    def remove_last(self):
-        self.maze = []
-        self.open_list = []
-        self.closed_list = []
-        self.final_path = []
-
-
-    def largest_distance(self):
-        largest = 0
-
-        for wall in self.walls:
-            if wall[0] > largest:
-                largest = wall[0]
-
-            if wall[1] > largest:
-                largest = wall[1]
-
-        for point in self.check_points:
-            if point[0] > largest:
-                largest = point[0]
-
-            if point[1] > largest:
-                largest = point[1]
-
-        return largest + 1
-
-
-    def create_maze(self, gui):
-        largest = self.largest_distance()
-
-        if gui.grid_size > largest:
-            largest = gui.grid_size
-
-        self.maze = [[0 for x in range(largest)] for y in range(largest)]
-        for wall in self.walls:
-            try:
-                wall_x, wall_y = wall
-                self.maze[wall_x][wall_y] = 1
-            except:
-                pass
-
-
-    def generate_random_maze(self, gui):
-        self.walls = []
-        for _ in range(gui.grid_size*gui.grid_size):
-            if random.random() > 0.6:
-                wall = (random.randint(0, gui.grid_size-1),
-                        random.randint(0, gui.grid_size-1))
-                if wall not in self.walls:
-                    self.walls.append(wall)
-
-
-def pathfind(maze, start, end, gui, coords, key):
-    start_node = Node(None, start)
-    end_node = Node(None, end)
-
-    open_list = []
-    closed_list = []
-
-    open_list.append(start_node)
-
-    count = 0 
-
-    # Loop until you find the end
-    while len(open_list) > 0:
-        if count >= gui.animation_speed:
-            count = 0
-
-            if key == "q":
-                current_node = open_list[-1]
-                current_index = len(open_list)-1
-
-            open_list.pop(current_index)
-            closed_list.append(current_node)
-
-            if current_node == end_node:
-                path = []
-                current = current_node
-                while current is not None:
-                    path.append(current.position)
-                    current = current.parent
-                coords.open_list = open_list
-                coords.closed_list = closed_list
-                return path
-
-            for new_pos in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
-                node_pos = (current_node.position[0] + new_pos[0],
-                            current_node.position[1] + new_pos[1])
-
-                if (
-                    node_pos[0] > (len(maze) - 1)
-                    or node_pos[0] < 0
-                    or node_pos[1] > (len(maze[len(maze)-1]) -1)
-                    or node_pos[1] < 0
-                ):
-                    continue
-
-                if maze[node_pos[0]][node_pos[1]] != 0:
-                    continue
-
-                if Node(current_node, node_pos) in closed_list:
-                    continue
-
-                child = Node(current_node, node_pos)
-                
-                passList = [
-                    False
-                    for closed_child in closed_list
-                    if child == closed_child
-                ]
-                if False in passList:
-                    continue
-          
-                for open_node in open_list:
-                    pass
-
-                else:
-                    open_list.append(child)
-
-        else:
-            coords.open_list = open_list
-            coords.closed_list = closed_list
-            gui.main(True)
-
-        count += 1
-
-
-class Node():
-    def __init__(self, parent, position):
-        self.parent = parent
-        self.position = position
-
-        self.g = 0
-        self.h = 0
-        self.f = 0
-
-    def __eq__(self, other):
-        return self.position == other.position
 
 if __name__ == "__main__":
     time.sleep(0.1)
