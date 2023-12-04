@@ -4,6 +4,7 @@ from node import Node
 class Coordinates():
     start: Node
     end: Node
+    current_node: Node | None
 
     def __init__(self):
         self.remove_all()
@@ -16,6 +17,7 @@ class Coordinates():
         self.maze = []
         self.open_list = []
         self.closed_list = []
+        self.current_node = None
         self.final_path = []
         self.check_points = []
 

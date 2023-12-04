@@ -1,7 +1,8 @@
 from node import Node
+from coordinates import Coordinates
 
 
-def pathfind(maze, start, end, gui, coords, key):
+def pathfind(maze, start, end, gui, coords: Coordinates, key):
     start_node = Node(None, start)
     end_node = Node(None, end)
 
@@ -9,6 +10,7 @@ def pathfind(maze, start, end, gui, coords, key):
     closed_list = []
 
     open_list.append(start_node)
+    current_node = start_node
 
     count = 0 
 
@@ -62,13 +64,14 @@ def pathfind(maze, start, end, gui, coords, key):
                 if False in passList:
                     continue
           
-                for open_node in open_list:
-                    pass
+                # for open_node in open_list:
+                #     pass
 
-                else:
-                    open_list.append(child)
+                # else:
+                open_list.append(child)
 
         else:
+            coords.current_node = current_node
             coords.open_list = open_list
             coords.closed_list = closed_list
             gui.main(True)

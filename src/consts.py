@@ -1,0 +1,13 @@
+BLACK = (0,0,0)
+WHITE = (255,255,255)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+PINK = (255, 0, 255)
+GRAMA = (146, 199, 93)
+CORTADOR = (96, 170, 196)
+CHECKPOINT_COLOR = (224, 161, 79)
+
+FPS = 60
+WIDTH = 800
+
+GAME_TITLE = "GramaZen - Visualização"
