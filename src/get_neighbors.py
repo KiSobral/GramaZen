@@ -7,3 +7,9 @@ def get_neighbors(node: Node) -> List[Node]:
                        for new_pos in [(-1, 0), (0, 1), (1, 0), (0, -1)]]
     neighbors = [Node(node, node_pos) for node_pos in node_positions]
     return neighbors
+
+def is_neighbor(current_node: Node, next_node: Node):
+    if abs(current_node.position[0] - next_node.position[0]) > 1 \
+    or abs(current_node.position[1] - next_node.position[1]) > 1:
+        return False
+    return True

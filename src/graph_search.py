@@ -1,9 +1,9 @@
-from get_neighbors import get_neighbors
+from get_neighbors import get_neighbors, is_neighbor
 from node import Node
 from coordinates import Coordinates
 
 
-def pathfind(maze, start, end, gui, coords: Coordinates, key):
+def dfs(maze, start, end, gui, coords: Coordinates, key):
     start_node = Node(None, start)
     end_node = Node(None, end)
 
@@ -20,18 +20,12 @@ def pathfind(maze, start, end, gui, coords: Coordinates, key):
         if count >= gui.animation_speed:
             count = 0
 
-            if key == "q":
-                current_node = open_list[-1]
-                current_index = len(open_list)-1
+            if not is_neighbor(current_node, open_list[-1]):
+                current_node = current_node.parent
+                continue
 
-            open_list.pop(current_index)
+            current_node = open_list.pop()
             closed_list.append(current_node)
-
-            node_positions = [
-                (current_node.position[0] + new_pos[0],
-                 current_node.position[1] + new_pos[1])
-                for new_pos in [(-1, 0), (0, 1), (1, 0), (0, -1)]
-            ]
 
             if current_node == end_node:
                 path = []

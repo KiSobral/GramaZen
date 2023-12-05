@@ -2,7 +2,7 @@ from typing import Tuple
 import pygame
 
 from coordinates import Coordinates
-from graph_search import pathfind
+from graph_search import dfs
 from consts import *
 
 
@@ -263,7 +263,7 @@ class Gui():
                     start = point
                     end = check_points[i+1]
 
-                    new_path = pathfind(
+                    new_path = dfs(
                         self.coords.maze,
                         start,
                         end,
