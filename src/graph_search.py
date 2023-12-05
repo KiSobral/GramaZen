@@ -26,6 +26,12 @@ def pathfind(maze, start, end, gui, coords: Coordinates, key):
             open_list.pop(current_index)
             closed_list.append(current_node)
 
+            node_positions = [
+                (current_node.position[0] + new_pos[0],
+                 current_node.position[1] + new_pos[1])
+                for new_pos in [(-1, 0), (0, 1), (1, 0), (0, -1)]
+            ]
+
             if current_node == end_node:
                 path = []
                 current = current_node
@@ -36,10 +42,7 @@ def pathfind(maze, start, end, gui, coords: Coordinates, key):
                 coords.closed_list = closed_list
                 return path
 
-            for new_pos in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
-                node_pos = (current_node.position[0] + new_pos[0],
-                            current_node.position[1] + new_pos[1])
-
+            for node_pos in node_positions:
                 if (
                     node_pos[0] > (len(maze) - 1)
                     or node_pos[0] < 0
@@ -56,18 +59,19 @@ def pathfind(maze, start, end, gui, coords: Coordinates, key):
 
                 child = Node(current_node, node_pos)
                 
-                passList = [
+                pass_list = [
                     False
                     for closed_child in closed_list
                     if child == closed_child
                 ]
-                if False in passList:
+                if False in pass_list:
                     continue
           
-                # for open_node in open_list:
-                #     pass
+                for i, open_check in enumerate(open_list):
+                    if child == open_check:
+                        open_list.pop(i)
+                        break
 
-                # else:
                 open_list.append(child)
 
         else:
