@@ -15,9 +15,7 @@ class Gui():
     cut_speed: int
 
 
-
     def __init__(self, coords):
-        # gui variables
         self.grid_size = 15
         self.box_width = WIDTH/self.grid_size
         self.coords = coords
@@ -26,7 +24,8 @@ class Gui():
         self.cut_speed = 15
 
         self.coords.maze = [
-            [0 for x in range(self.grid_size)] for y in range(self.grid_size)]
+            [0 for _ in range(self.grid_size)]
+            for __ in range(self.grid_size)]
 
         pygame.init()
         self.window = pygame.display.set_mode((WIDTH, WIDTH))
@@ -74,13 +73,12 @@ class Gui():
                     pygame.quit()
                     exit()
 
-                # key presses
                 elif event.type == pygame.KEYDOWN:
                     key = chr(event.key)
 
                     if not running:
                         if key in run_keys:
-                            self.run_algorithm(key)              
+                            self.run_algorithm()              
 
                         elif key in clear_field_keys:
                             self.coords.clear_all_field()
@@ -93,7 +91,6 @@ class Gui():
 
                         elif key in random_blocks_keys:
                             self.coords.generate_random_blocks(self)
-
 
                     if key in speed_up_keys and self.cut_speed > 0:
                         if self.cut_speed <= 2:
@@ -139,7 +136,7 @@ class Gui():
 
 
     def redraw(self):
-        self.window.fill(GRAMA)
+        self.window.fill(GRASS)
         self.draw_points()
         self.draw_grid()
 
@@ -159,35 +156,29 @@ class Gui():
 
 
     def draw_points(self):
-        # Desenhando os vizinhos
         for node in self.coords.open_list:
-            self.draw_box(node.position, GREEN)
+            self.draw_box(node.position, TO_VISIT)
 
-        # Desenhando os que já foram visitados
         for node in self.coords.closed_list:
-            self.draw_box(node.position, BLUE)
+            self.draw_box(node.position, CUT_GRASS)
 
         if self.coords.current_node is not None:
-            self.draw_box(self.coords.current_node.position, CORTADOR)
+            self.draw_box(self.coords.current_node.position, CUTTER)
 
-        # Desenha o caminho final (meio desnecessário pra mim)
-        for wall in self.coords.final_path:
-            self.draw_box(wall, PINK)
-
-        # Pintando as paredes
         for wall in self.coords.walls:
             self.draw_box(wall, BLACK)
 
-        for _, point in enumerate(self.coords.check_points):
-            if point != None:
-                self.draw_box(point, CHECKPOINT_COLOR)
+        if self.coords.start_point:
+            self.draw_box(
+                self.coords.start_point,
+                START_COORD
+            )
 
 
     def box_center(self, box):
         box_x, box_y = box
         center = ((box_x*self.box_width + self.box_width/2),
                   (box_y*self.box_width + self.box_width/2))
-
         return center
 
 
@@ -213,17 +204,14 @@ class Gui():
 
     def place_start(self):
         box_coords = self.get_box_coords()
-        if (box_coords not in self.coords.walls
-            and box_coords not in self.coords.check_points):
-            self.coords.check_points.append(box_coords)
+        if box_coords not in self.coords.walls:
+            self.coords.start_point = box_coords
 
 
     def place_wall(self):
         coords = self.get_box_coords()
         if (coords != self.coords.start
-            and coords != self.coords.end
-            and coords not in self.coords.walls
-            and coords not in self.coords.check_points):
+            and coords not in self.coords.walls):
             self.coords.walls.append(coords)
 
 
@@ -232,31 +220,23 @@ class Gui():
         if coords in self.coords.walls:
             self.coords.walls.remove(coords)
 
-        elif coords in self.coords.check_points:
-            self.coords.check_points.remove(coords)
+        elif coords == self.coords.start_point:
+            self.coords.start_point = None
 
         elif coords == self.coords.start:
             self.coords.start = None
 
-        elif coords == self.coords.end:
-            self.coords.end = None
 
-
-    def run_algorithm(self, key):
+    def run_algorithm(self):
         self.placing_blocks = False
         self.removing_blocks = False
         self.coords.clear_cut()
 
-        if len(self.coords.check_points) > 0:
+        if self.coords.start_point:
             self.coords.create_maze(self)
-            check_points = self.coords.check_points[:]
-            check_points = [point for point in check_points if point != "None"]
-
-            for point in check_points:
-                start = point
-                dfs(
-                    self.coords.maze,
-                    start,
-                    self,
-                    self.coords,
-                )
+            dfs(
+                self.coords.maze,
+                self.coords.start_point,
+                self,
+                self.coords,
+            )

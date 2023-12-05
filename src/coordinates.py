@@ -1,10 +1,16 @@
 from random import random, randint
+from typing import List, Tuple
 from node import Node
 
 class Coordinates():
     start: Node
-    end: Node
+    walls: List[Tuple[int, int]]
+    maze: List[List[int]]
+    open_list: List[Node]
+    closed_list: List[Node]
     current_node: Node | None
+    start_point: Tuple[int, int] | None
+
 
     def __init__(self):
         self.clear_all_field()
@@ -12,21 +18,18 @@ class Coordinates():
 
     def clear_all_field(self):
         self.start = None
-        self.end = None
         self.walls = []
         self.maze = []
         self.open_list = []
         self.closed_list = []
         self.current_node = None
-        self.final_path = []
-        self.check_points = []
+        self.start_point = None
 
 
     def clear_cut(self):
         self.maze = []
         self.open_list = []
         self.closed_list = []
-        self.final_path = []
 
 
     def largest_distance(self):
@@ -39,12 +42,10 @@ class Coordinates():
             if wall[1] > largest:
                 largest = wall[1]
 
-        for point in self.check_points:
-            if point[0] > largest:
-                largest = point[0]
-
-            if point[1] > largest:
-                largest = point[1]
+        if self.start_point[0] > largest:
+            largest = self.start_point[0]
+        if self.start_point[1] > largest:
+                largest = self.start_point[1]
 
         return largest + 1
 
