@@ -1,3 +1,4 @@
+from get_neighbors import get_neighbors
 from node import Node
 from coordinates import Coordinates
 
@@ -42,37 +43,35 @@ def pathfind(maze, start, end, gui, coords: Coordinates, key):
                 coords.closed_list = closed_list
                 return path
 
-            for node_pos in node_positions:
+            for neighbor in get_neighbors(current_node):
                 if (
-                    node_pos[0] > (len(maze) - 1)
-                    or node_pos[0] < 0
-                    or node_pos[1] > (len(maze[len(maze)-1]) -1)
-                    or node_pos[1] < 0
+                    neighbor.position[0] > (len(maze) - 1)
+                    or neighbor.position[0] < 0
+                    or neighbor.position[1] > (len(maze[len(maze)-1]) -1)
+                    or neighbor.position[1] < 0
                 ):
                     continue
 
-                if maze[node_pos[0]][node_pos[1]] != 0:
+                if maze[neighbor.position[0]][neighbor.position[1]] != 0:
                     continue
 
-                if Node(current_node, node_pos) in closed_list:
+                if neighbor in closed_list:
                     continue
-
-                child = Node(current_node, node_pos)
                 
                 pass_list = [
                     False
                     for closed_child in closed_list
-                    if child == closed_child
+                    if neighbor == closed_child
                 ]
                 if False in pass_list:
                     continue
           
                 for i, open_check in enumerate(open_list):
-                    if child == open_check:
+                    if neighbor == open_check:
                         open_list.pop(i)
                         break
 
-                open_list.append(child)
+                open_list.append(neighbor)
 
         else:
             coords.current_node = current_node
