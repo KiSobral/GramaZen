@@ -7,10 +7,10 @@ class Coordinates():
     current_node: Node | None
 
     def __init__(self):
-        self.remove_all()
+        self.clear_all_field()
 
 
-    def remove_all(self):
+    def clear_all_field(self):
         self.start = None
         self.end = None
         self.walls = []
@@ -22,7 +22,7 @@ class Coordinates():
         self.check_points = []
 
 
-    def remove_last(self):
+    def clear_cut(self):
         self.maze = []
         self.open_list = []
         self.closed_list = []
@@ -64,7 +64,7 @@ class Coordinates():
                 pass
 
 
-    def generate_random_maze(self, gui):
+    def generate_random_blocks(self, gui):
         self.walls = []
         for _ in range(gui.grid_size*gui.grid_size):
             if random() > 0.6:

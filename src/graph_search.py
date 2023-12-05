@@ -3,9 +3,8 @@ from node import Node
 from coordinates import Coordinates
 
 
-def dfs(maze, start, end, gui, coords: Coordinates, key):
+def dfs(maze, start, gui, coords: Coordinates):
     start_node = Node(None, start)
-    end_node = Node(None, end)
 
     open_list = []
     closed_list = []
@@ -17,7 +16,7 @@ def dfs(maze, start, end, gui, coords: Coordinates, key):
 
     # Loop until you find the end
     while len(open_list) > 0:
-        if count >= gui.animation_speed:
+        if count >= gui.cut_speed:
             count = 0
 
             if not is_neighbor(current_node, open_list[-1]):
@@ -26,16 +25,6 @@ def dfs(maze, start, end, gui, coords: Coordinates, key):
 
             current_node = open_list.pop()
             closed_list.append(current_node)
-
-            if current_node == end_node:
-                path = []
-                current = current_node
-                while current is not None:
-                    path.append(current.position)
-                    current = current.parent
-                coords.open_list = open_list
-                coords.closed_list = closed_list
-                return path
 
             for neighbor in get_neighbors(current_node):
                 if (
@@ -71,6 +60,6 @@ def dfs(maze, start, end, gui, coords: Coordinates, key):
             coords.current_node = current_node
             coords.open_list = open_list
             coords.closed_list = closed_list
-            gui.main(True)
+            gui.sprite(True)
 
         count += 1

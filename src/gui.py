@@ -10,9 +10,10 @@ class Gui():
     grid_size: int
     box_width: float
     coords: Coordinates
-    placing_walls: bool
-    removing_walls: bool
-    animation_speed: int
+    placing_blocks: bool
+    removing_blocks: bool
+    cut_speed: int
+
 
 
     def __init__(self, coords):
@@ -20,20 +21,20 @@ class Gui():
         self.grid_size = 15
         self.box_width = WIDTH/self.grid_size
         self.coords = coords
-        self.placing_walls = False
-        self.removing_walls = False
-        self.animation_speed = 5
+        self.placing_blocks = False
+        self.removing_blocks = False
+        self.cut_speed = 15
 
         self.coords.maze = [
             [0 for x in range(self.grid_size)] for y in range(self.grid_size)]
 
         pygame.init()
-        self.win = pygame.display.set_mode((WIDTH, WIDTH))
+        self.window = pygame.display.set_mode((WIDTH, WIDTH))
         self.clock = pygame.time.Clock()
         pygame.display.set_caption(GAME_TITLE)
 
-    # main function for gui
-    def main(self, is_running=False):
+
+    def sprite(self, is_running=False):
         '''
         Essa função fica rodando em loop. Enquanto o loop estiver ativo, o jogo está rodando.
         Os passos que essa função faz:
@@ -47,9 +48,9 @@ class Gui():
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         if not is_running:
-            if self.placing_walls == True:
+            if self.placing_blocks == True:
                 self.place_wall()
-            elif self.removing_walls == True:
+            elif self.removing_blocks == True:
                 self.remove()
 
         self.event_handle(is_running)
@@ -59,7 +60,13 @@ class Gui():
 
     def event_handle(self, running):
         run_keys = set("q")
-        checkpoint_keys = set(["1", "2"])
+        checkpoint_keys = set("1")
+        clear_field_keys = set("x")
+        clear_cut_keys = set("z")
+        random_blocks_keys = set(" ")
+        speed_up_keys = set(["+", "="])
+        slow_down_keys = set("-")
+        stop_cutter_keys = set("p")
 
         for event in pygame.event.get():
             try:
@@ -69,66 +76,59 @@ class Gui():
 
                 # key presses
                 elif event.type == pygame.KEYDOWN:
-                    #
-                    # Verificações no teclado.
-                    # Verifica se não tem nenhum algoritmo rodando. Se não tiver, pode usar as teclas do teclado.
-                    #
                     key = chr(event.key)
 
                     if not running:
                         if key in run_keys:
                             self.run_algorithm(key)              
 
-                        elif key == "x":
-                            self.coords.remove_all()
+                        elif key in clear_field_keys:
+                            self.coords.clear_all_field()
 
-                        elif key == "z":
-                            self.coords.remove_last()
+                        elif key in clear_cut_keys:
+                            self.coords.clear_cut()
 
                         elif key in checkpoint_keys:
-                            self.place_check_point(key)
+                            self.place_start()
 
-                        elif key == " ":
-                            self.coords.generate_random_maze(self)
+                        elif key in random_blocks_keys:
+                            self.coords.generate_random_blocks(self)
 
 
-                    if (key == "+" or key == "=") and self.animation_speed > 0:
-                        if self.animation_speed <= 2:
-                            self.animation_speed = 1
+                    if key in speed_up_keys and self.cut_speed > 0:
+                        if self.cut_speed <= 2:
+                            self.cut_speed = 2
                         else:
-                            self.animation_speed = int(self.animation_speed * 0.5) + 1
+                            self.cut_speed = int(self.cut_speed * 0.5) + 1
 
-                    elif key == "-":
-                        self.animation_speed = int(self.animation_speed * 2) + 1
+                    elif key in slow_down_keys:
+                        self.cut_speed = int(self.cut_speed * 2) + 1
+
+                    elif key in stop_cutter_keys:
+                        # Altera o estado de is_running no singleton
+                        pass
 
                     else:
                         print(key)
 
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    #
-                    # Quando aperta os botões do mouse, inicia a lógica para colocar, ou remover, paredes.
-                    #
                     if running == False:
-                        if event.button == 1:
-                            self.placing_walls = True
+                        if event.button == 1: # Alias de estado da pygame
+                            self.placing_blocks = True
 
-                        elif event.button == 3:
-                            self.removing_walls = True
+                        elif event.button == 3: # Alias de estado da pygame
+                            self.removing_blocks = True
 
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    #
-                    # Quando "desaperta" os botões do mouse, inicia a lógica para colocar, ou remover, paredes.
-                    #
+                    if event.button == 1: # Alias de estado da pygame
+                        self.placing_blocks = False
 
-                    if event.button == 1:
-                        self.placing_walls = False
-
-                    elif event.button == 3:
-                        self.removing_walls = False
+                    elif event.button == 3: # Alias de estado da pygame
+                        self.removing_blocks = False
             
             except ValueError:
-                print("Closing game due to key mismatch.")
+                print("Key mismatch.")
                 pygame.quit()
                 exit()
             
@@ -139,7 +139,7 @@ class Gui():
 
 
     def redraw(self):
-        self.win.fill(GRAMA)
+        self.window.fill(GRAMA)
         self.draw_points()
         self.draw_grid()
 
@@ -147,12 +147,12 @@ class Gui():
     def draw_grid(self):
         for i in range(self.grid_size-1):
             pygame.draw.rect(
-                self.win,
+                self.window,
                 BLACK,
                 ((i+1)*self.box_width-2, 0, 5, WIDTH)
             )
             pygame.draw.rect(
-                self.win,
+                self.window,
                 BLACK,
                 (0, (i+1)*self.box_width-2, WIDTH, 5)
             )
@@ -194,7 +194,7 @@ class Gui():
     def draw_box(self, box, colour):
         box_x, box_y = box
         pygame.draw.rect(
-            self.win,
+            self.window,
             colour,
             (
                 box_x * self.box_width,
@@ -211,17 +211,11 @@ class Gui():
         return (box_x, box_y)
 
 
-    def place_check_point(self, index):
+    def place_start(self):
         box_coords = self.get_box_coords()
-        if (box_coords != self.coords.start
-            and box_coords != self.coords.end
-            and box_coords not in self.coords.walls
+        if (box_coords not in self.coords.walls
             and box_coords not in self.coords.check_points):
-
-            while len(self.coords.check_points) <= int(index)-1:
-                self.coords.check_points.append("None")
-
-            self.coords.check_points[int(index)-1] = box_coords
+            self.coords.check_points.append(box_coords)
 
 
     def place_wall(self):
@@ -249,30 +243,20 @@ class Gui():
 
 
     def run_algorithm(self, key):
-        self.placing_walls = False
-        self.removing_walls = False
-        self.coords.remove_last()
+        self.placing_blocks = False
+        self.removing_blocks = False
+        self.coords.clear_cut()
 
-        if len(self.coords.check_points) > 1:
+        if len(self.coords.check_points) > 0:
             self.coords.create_maze(self)
             check_points = self.coords.check_points[:]
             check_points = [point for point in check_points if point != "None"]
 
-            for i, point in enumerate(check_points):
-                if i != len(check_points)-1:
-                    start = point
-                    end = check_points[i+1]
-
-                    new_path = dfs(
-                        self.coords.maze,
-                        start,
-                        end,
-                        self,
-                        self.coords,
-                        key
-                    )
-
-                    if new_path == None:
-                        new_path = []
-
-                    self.coords.final_path.extend(new_path)
+            for point in check_points:
+                start = point
+                dfs(
+                    self.coords.maze,
+                    start,
+                    self,
+                    self.coords,
+                )
